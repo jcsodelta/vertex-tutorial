@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class App {
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("Starting App!");
+        System.out.println("Starting App::main!");
 
         AtomicInteger value = new AtomicInteger(10);
         AtomicBoolean increment_stopped = new AtomicBoolean(false);
@@ -57,6 +57,6 @@ public class App {
             }
         });
 
-        System.out.println("Exiting App!");
+        System.out.println("Exiting App::main!");
     }
 }

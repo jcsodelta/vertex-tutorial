@@ -13,7 +13,7 @@ public class App {
     private static final Vertx vertxA = Vertx.vertx();
 
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("Starting App!");
+        System.out.println("Starting App::main!");
 
         Future.join(Arrays.asList(
                 Future.all(get_some_bad_futures()).onComplete(ar -> {
@@ -41,7 +41,7 @@ public class App {
             vertxA.close();
         });
 
-        System.out.println("Exiting App!");
+        System.out.println("Exiting App::main!");
     }
 
     private static List<Future<Integer>> get_good_futures() {
