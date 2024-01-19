@@ -11,7 +11,6 @@ public class App {
 
         AtomicInteger value = new AtomicInteger(10);
         AtomicBoolean increment_stopped = new AtomicBoolean(false);
-        AtomicBoolean decrement_1_stopped = new AtomicBoolean(false);
 
         Vertx vertxA = Vertx.vertx();
         Vertx vertxB = Vertx.vertx();
@@ -19,9 +18,14 @@ public class App {
         vertxA.setPeriodic(100, 1000, id -> {
             System.out.printf("vertexA Periodic1 decrement %d\n", value.decrementAndGet());
             if (value.get() <= 0 && increment_stopped.get()) {
-                vertxA.cancelTimer(id);
-                vertxA.close();
-                decrement_1_stopped.set(true);
+                vertxA.close().onComplete(ar -> {
+                    if (ar.succeeded()) {
+                        System.out.println("Success closing vertxA");
+                    } else {
+                        System.out.println("Failure closing vertxA");
+                    }
+                });
+
             }
         });
         vertxA.setTimer(200, id -> {
@@ -36,20 +40,20 @@ public class App {
                         throw new RuntimeException(e);
                     }
                 }
-
-                if (decrement_1_stopped.get()) {
-                    vertxA.cancelTimer(id2);
-                    vertxA.close();
-                }
             });
         });
 
         vertxB.setPeriodic(1000, id -> {
             System.out.printf("vertexB Periodic increment %d\n", value.incrementAndGet());
             if (value.get() <= 0) {
-                vertxB.cancelTimer(id);
                 increment_stopped.set(true);
-                vertxB.close();
+                vertxB.close().onComplete(ar -> {
+                    if (ar.succeeded()) {
+                        System.out.println("Success closing vertxB");
+                    } else {
+                        System.out.println("Failure closing vertxB");
+                    }
+                });
             }
         });
 
