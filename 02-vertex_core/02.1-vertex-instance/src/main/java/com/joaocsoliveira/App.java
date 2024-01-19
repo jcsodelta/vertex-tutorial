@@ -27,6 +27,16 @@ public class App {
         vertxA.setTimer(200, id -> {
             vertxA.setPeriodic(1000, id2 -> {
                 System.out.printf("vertexA Periodic2 decrement %d\n", value.decrementAndGet());
+
+                // force blocking event loop
+                if (value.get() == 5) {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 if (decrement_1_stopped.get()) {
                     vertxA.cancelTimer(id2);
                     vertxA.close();
