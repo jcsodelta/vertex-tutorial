@@ -3,6 +3,11 @@
 Following tutorials at https://vertx.io/
 
 
+## Running experiments
+
+Enter the experiment directory and run ```mvn package exec:java```
+
+
 ## Objectives
 
 1) Do tutorials.
