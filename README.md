@@ -1,4 +1,4 @@
-# Vertex Tutorial
+# Vertx Tutorial
 
 Following tutorials at https://vertx.io/
 
