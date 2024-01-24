@@ -4,15 +4,20 @@ import com.joaocsoliveira.models.Data;
 import com.joaocsoliveira.models.DataSerializable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonObject;
+
+import java.util.logging.Logger;
+
+import static com.joaocsoliveira.Config.PRINTER_DATA_ADDRESS;
 
 public class DataVerticle extends AbstractVerticle {
+    private final Logger logger = Logger.getLogger(getClass().getName());
 
+    @Override
     public void start() {
-        System.out.println("DataVerticle is being deployed");
+        logger.info("DataVerticle is being deployed");
 
         EventBus eb = vertx.eventBus();
-        eb.consumer("printer.data", message -> {
+        eb.consumer(PRINTER_DATA_ADDRESS, message -> {
             String name = switch (message.body()) {
                 case Data data -> data.getName();
                 case DataSerializable data -> data.getName();
@@ -22,7 +27,8 @@ public class DataVerticle extends AbstractVerticle {
         });
     }
 
+    @Override
     public void stop() {
-        System.out.println("DataVerticle is being undeployed");
+        logger.info("DataVerticle is being undeployed");
     }
 }

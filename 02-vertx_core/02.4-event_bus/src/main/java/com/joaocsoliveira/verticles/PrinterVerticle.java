@@ -3,19 +3,28 @@ package com.joaocsoliveira.verticles;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 
-public class PrinterVerticle extends AbstractVerticle {
-    public void start() {
-        String verticle_name = config().getString("name");
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-        System.out.printf("PrinterVerticle (%s) is being deployed\n", verticle_name);
+import static com.joaocsoliveira.Config.OUTPUT_PRINTER_ADDRESS;
+
+public class PrinterVerticle extends AbstractVerticle {
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
+
+    @Override
+    public void start() {
+        String verticleName = config().getString("name");
+
+        logger.log(Level.INFO, "PrinterVerticle ({0}) is being deployed\n", verticleName);
 
         EventBus eb = vertx.eventBus();
-        eb.consumer("output.printer", message -> {
-            System.out.printf("PrinterVerticle (%s) : %s\n", verticle_name, message.body());
-        });
+        eb.consumer(OUTPUT_PRINTER_ADDRESS, message ->
+            logger.log(Level.INFO, "PrinterVerticle ({0}): {1}\n", new Object[]{verticleName, message.body()})
+        );
     }
 
+    @Override
     public void stop() {
-        System.out.printf("PrinterVerticle (%s) is being undeployed\n", config().getString("name"));
+        logger.log(Level.INFO, "PrinterVerticle ({0}) is being undeployed\n", config().getString("name"));
     }
 }

@@ -5,18 +5,21 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
+import java.util.logging.Logger;
+
 public class App {
+    private static final Logger logger = Logger.getLogger(App.class.getName());
     private static final Vertx vertx = Vertx.vertx();
 
     public static void main(String[] args) {
-        System.out.println("Starting App::main!");
+        logger.info("Starting App::main!");
 
         vertx.deployVerticle(new MyVerticle())
                 .onComplete(v -> {
                     if (v.succeeded()) {
-                        System.out.println("MyVerticle deployment succeeded");
+                        logger.info("MyVerticle deployment succeeded");
                     } else {
-                        System.out.println("MyVerticle deployment failed");
+                        logger.info("MyVerticle deployment failed");
                     }
                 });
 
@@ -24,12 +27,12 @@ public class App {
         vertx.deployVerticle("com.joaocsoliveira.verticles.MyVerticle", options)
                 .onComplete(v -> {
                     if (v.succeeded()) {
-                        System.out.println("MyVerticle from factory deployment succeeded");
+                        logger.info("MyVerticle from factory deployment succeeded");
                     } else {
-                        System.out.println("MyVerticle from factory deployment failed");
+                        logger.info("MyVerticle from factory deployment failed");
                     }
                 });
 
-        System.out.println("Exiting App::main!");
+        logger.info("Exiting App::main!");
     }
 }

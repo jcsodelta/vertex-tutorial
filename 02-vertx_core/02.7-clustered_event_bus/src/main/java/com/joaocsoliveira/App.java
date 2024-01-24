@@ -1,70 +1,77 @@
 package com.joaocsoliveira;
 
-import com.hazelcast.core.HazelcastInstance;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 
-import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 import static java.lang.Integer.parseInt;
 
 public class App {
+    private static final Logger logger = Logger.getLogger(App.class.getName());
+    private static final String PRODUCER_NAME = "producer";
+    private static final String CONSUMER_NAME = "consumer";
 
     public static void main(String[] args) {
-        System.out.println("Starting App::main!");
+        logger.info("Starting App::main!");
 
         VertxOptions options = new VertxOptions();
 
         Vertx.clusteredVertx(options)
-            .onComplete(ar_creation -> {
-                if (ar_creation.failed()) {
-                    System.out.printf("Failed instantiating clustered vertx: %s\n", ar_creation.cause());
+            .onComplete(arCreation -> {
+                if (arCreation.failed()) {
+                    logger.log(Level.INFO, "Failed instantiating clustered vertx: {0}", arCreation.cause());
                     System.exit(1);
                 }
 
-                Vertx vertx = ar_creation.result();
+                Vertx vertx = arCreation.result();
 
                 EventBus eb = vertx.eventBus();
 
-                boolean worker;
+                boolean consumer;
                 int instances;
-                if (args.length == 1 && args[0].equals("producer")) {
-                    worker = false;
-                    instances = 1;
-                } else if (args.length == 1 && !args[0].equals("producer")) {
-                    worker = true;
-                    instances = parseInt(args[0]);
+                if (args.length == 1) {
+                    if (PRODUCER_NAME.equals(args[0])){
+                        consumer = false;
+                        instances = 1;
+                    } else {
+                        consumer = true;
+                        instances = parseInt(args[0]);
+                    }
                 } else {
-                    worker = true;
+                    consumer = true;
                     instances = 1;
                 }
-                System.out.printf("initializing %s  args = '%s'\n", worker ? "worker" : "producer", String.join(" ", args));
+                String name = consumer ? CONSUMER_NAME : PRODUCER_NAME;
+                String params = String.join(" ", args);
+                logger.log(Level.INFO, "initializing {0}  args = '{1}'", new Object[]{name, params});
 
-                if (worker) {
-                    System.out.println("starting worker");
+                if (consumer) {
+                    logger.info("starting worker");
                     vertx.deployVerticle("com.joaocsoliveira.verticles.BlockingVerticle", new DeploymentOptions().setInstances(instances));
-                    eb.consumer("action.finished", message -> {
-                        vertx.close();
-                    });
+                    eb.consumer("action.finished", message ->
+                        vertx.close()
+                    );
                 } else {
-                    System.out.println("starting producer");
+                    logger.info("starting producer");
                     Future.join(IntStream.range(0, 10).boxed().toList()
                         .stream().map(order -> {
-                            System.out.printf("sending %s\n", order);
+                            logger.log(Level.INFO, "sending {0}", order);
                             return eb.request("action.do_something", order);
                         }).toList())
                     .onComplete(ar -> {
-                        System.out.println("Calling vertx.close()");
+                        logger.info("Calling vertx.close()");
                         eb.publish("action.finished", "");
                         vertx.close();
                     });
                 }
             });
 
-        System.out.println("Exiting App::main!");
+        logger.info("Exiting App::main!");
     }
 }

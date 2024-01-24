@@ -8,17 +8,20 @@ import io.vertx.core.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 import static com.joaocsoliveira.Config.FACTORIAL_REQUEST_NAME;
 
 public class App {
+    private static final Logger logger = Logger.getLogger(App.class.getName());
     private static final Vertx vertx = Vertx.vertx();
     private static final List<Integer> values = new ArrayList<>(IntStream.range(0, 20).boxed().toList());
     private static final DeliveryOptions delivery_options = new DeliveryOptions().setSendTimeout(5000);
 
     public static void main(String[] args) {
-        System.out.println("Starting App::main!");
+        logger.info("Starting App::main!");
 
         Future.all(Arrays.asList(
                 vertx.deployVerticle("com.joaocsoliveira.verticles.AlwaysSuccessfulVerticle"),
@@ -26,35 +29,35 @@ public class App {
                 vertx.deployVerticle("com.joaocsoliveira.verticles.CanTimeoutVerticle")
         )).onComplete(ar -> {
             if (ar.failed()) {
-                System.out.println("failed deploying verticles");
+                logger.info("failed deploying verticles");
             } else {
-                send_requests();
+                sendRequests();
             }
         });
 
-        System.out.println("Exiting App::main!");
+        logger.info("Exiting App::main!");
     }
 
-    private static void send_requests() {
-        System.out.printf("sending: %s\n", values);
+    private static void sendRequests() {
+        logger.log(Level.INFO, "sending: {0}", values);
 
         EventBus eb = vertx.eventBus();
 
-        List<Integer> successful_values = new ArrayList<>();
+        List<Integer> successfulValues = new ArrayList<>();
         Future.join(values.stream().map(i ->
-            eb.request(FACTORIAL_REQUEST_NAME, i, delivery_options)
-                .onComplete(ar_request -> {
-                    if (ar_request.failed()) {
-                        System.out.printf("[%d] failed: %s\n", i, ar_request.cause());
-                    } else {
-                        successful_values.add(i);
-                        System.out.printf("[%d] success: %s\n", i, ar_request.result().body());
-                    }
-                })
-        ).toList()).onComplete(ar_finished -> {
-            values.removeAll(successful_values);
+                eb.request(FACTORIAL_REQUEST_NAME, i, delivery_options)
+                        .onComplete(arRequest -> {
+                            if (arRequest.failed()) {
+                                logger.log(Level.WARNING, "[{0}] failed: {1}", new Object[]{i, arRequest.cause()});
+                            } else {
+                                successfulValues.add(i);
+                                logger.log(Level.INFO, "[{0}] success: {1}", new Object[]{i, arRequest.result().body()});
+                            }
+                        })
+        ).toList()).onComplete(arFinished -> {
+            values.removeAll(successfulValues);
             if (!values.isEmpty()) {
-                send_requests();
+                sendRequests();
             } else {
                 vertx.close();
             }

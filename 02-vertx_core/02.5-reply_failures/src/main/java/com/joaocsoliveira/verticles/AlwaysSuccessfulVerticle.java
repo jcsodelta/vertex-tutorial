@@ -3,11 +3,16 @@ package com.joaocsoliveira.verticles;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 
+import java.util.logging.Logger;
+
 import static com.joaocsoliveira.Config.FACTORIAL_REQUEST_NAME;
 
 public class AlwaysSuccessfulVerticle extends AbstractVerticle {
+    private final Logger logger = Logger.getLogger(getClass().getName());
+
+    @Override
     public void start() {
-        System.out.println("AlwaysSuccessfulVerticle is being deployed");
+        logger.info("AlwaysSuccessfulVerticle is being deployed");
 
         EventBus eb = vertx.eventBus();
         eb.consumer(FACTORIAL_REQUEST_NAME, message -> {
@@ -22,7 +27,8 @@ public class AlwaysSuccessfulVerticle extends AbstractVerticle {
         });
     }
 
+    @Override
     public void stop() {
-        System.out.println("AlwaysSuccessfulVerticle is being undeployed");
+        logger.info("AlwaysSuccessfulVerticle is being undeployed");
     }
 }

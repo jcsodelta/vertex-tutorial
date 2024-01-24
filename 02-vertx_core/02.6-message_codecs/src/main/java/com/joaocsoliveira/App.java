@@ -15,14 +15,19 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.joaocsoliveira.Config.*;
 
 public class App {
+    private static final Logger logger = Logger.getLogger(App.class.getName());
 
     public static void main(String[] args) {
-        System.out.println("Starting App::main!");
+        logger.info("Starting App::main!");
 
         Vertx vertx = Vertx.vertx();
-        DeliveryOptions delivery_options = new DeliveryOptions().setSendTimeout(5000);
+        DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(5000);
 
         EventBus eb = vertx.eventBus();
         eb.registerDefaultCodec(Data.class, new DataCodec());
@@ -32,22 +37,22 @@ public class App {
                 vertx.deployVerticle("com.joaocsoliveira.verticles.JsonStringVerticle"),
                 vertx.deployVerticle("com.joaocsoliveira.verticles.JsonVerticle"),
                 vertx.deployVerticle("com.joaocsoliveira.verticles.DataVerticle")
-        )).onComplete(ar_deployment -> {
-            if (ar_deployment.failed()) {
-                System.out.println("failed deploying verticles");
+        )).onComplete(arDeployment -> {
+            if (arDeployment.failed()) {
+                logger.info("failed deploying verticles");
             } else {
                 // string
-                String normal_string = "Some normal string";
-                String json_string = "{ \"name\": \"Some Json String\" }";
+                String normalString = "Some normal string";
+                String jsonString = "{ \"name\": \"Some Json String\" }";
 
                 // json
-                JsonObject json_object = new JsonObject().put("name", "Some JsonObject");
+                JsonObject jsonObject = new JsonObject().put("name", "Some JsonObject");
 
                 // ClusterSerializable
-                DataClusterSerializable data_cluster_serializable = new DataClusterSerializable("Some data ClusterSerializable");
+                DataClusterSerializable dataClusterSerializable = new DataClusterSerializable("Some data ClusterSerializable");
 
                 // serializable
-                DataSerializable data_serializable = new DataSerializable("Some data Serializable");
+                DataSerializable dataSerializable = new DataSerializable("Some data Serializable");
 
                 // pojo
                 Data data = new Data("Some data");
@@ -56,50 +61,50 @@ public class App {
                 // Requests
 
                 List<Future<Message<Object>>> responses = new ArrayList<>();
-                responses.add(eb.request("printer.string", normal_string, delivery_options).onComplete(ar -> {
-                    print("printer.string", ar);
-                }));
-                responses.add(eb.request("printer.string", json_string, delivery_options).onComplete(ar -> {
-                    print("printer.string", ar);
-                }));
+                responses.add(eb.request(PRINTER_STRING_ADDRESS, normalString, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_STRING_ADDRESS, ar)
+                ));
+                responses.add(eb.request(PRINTER_STRING_ADDRESS, jsonString, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_STRING_ADDRESS, ar)
+                ));
 
-                responses.add(eb.request("printer.json_string", normal_string, delivery_options).onComplete(ar -> {
-                    print("printer.json_string", ar);
-                }));
-                responses.add(eb.request("printer.json_string", json_string, delivery_options).onComplete(ar -> {
-                    print("printer.json_string", ar);
-                }));
-                responses.add(eb.request("printer.json_string", json_object, delivery_options).onComplete(ar -> {
-                    print("printer.json_string", ar);
-                }));
+                responses.add(eb.request(PRINTER_JSON_STRING_ADDRESS, normalString, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_JSON_STRING_ADDRESS, ar)
+                ));
+                responses.add(eb.request(PRINTER_JSON_STRING_ADDRESS, jsonString, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_JSON_STRING_ADDRESS, ar)
+                ));
+                responses.add(eb.request(PRINTER_JSON_STRING_ADDRESS, jsonObject, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_JSON_STRING_ADDRESS, ar)
+                ));
 
-                responses.add(eb.request("printer.json_object", json_object, delivery_options).onComplete(ar -> {
-                    print("printer.json_object", ar);
-                }));
+                responses.add(eb.request(PRINTER_JSON_OBJECT_ADDRESS, jsonObject, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_JSON_OBJECT_ADDRESS, ar)
+                ));
 
-                responses.add(eb.request("printer.data", data, delivery_options).onComplete(ar -> {
-                    print("printer.data", ar);
-                }));
-                responses.add(eb.request("printer.data", data_cluster_serializable, delivery_options).onComplete(ar -> {
-                    print("printer.data", ar);
-                }));
-                responses.add(eb.request("printer.data", data_serializable, delivery_options).onComplete(ar -> {
-                    print("printer.data", ar);
-                }));
+                responses.add(eb.request(PRINTER_DATA_ADDRESS, data, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_DATA_ADDRESS, ar)
+                ));
+                responses.add(eb.request(PRINTER_DATA_ADDRESS, dataClusterSerializable, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_DATA_ADDRESS, ar)
+                ));
+                responses.add(eb.request(PRINTER_DATA_ADDRESS, dataSerializable, deliveryOptions).onComplete(ar -> 
+                    print(PRINTER_DATA_ADDRESS, ar)
+                ));
 
                 Future.join(responses)
                     .onComplete(ar -> {
-                        System.out.println("Calling vertx.close()");
+                        logger.info("Calling vertx.close()");
                         vertx.close();
                     });
             }
         });
 
-        System.out.println("Exiting App::main!");
+        logger.info("Exiting App::main!");
     }
 
     private static void print(String destination, AsyncResult<Message<Object>> ar) {
         Object result = ar.result() == null ? null : ar.result().body();
-        System.out.printf("\t%s | response: %s | success: %s | %s\n", destination, result, ar.succeeded(), ar.cause());
+        logger.log(Level.INFO, "\t{0} | response: {1} | success: {2} | {3}", new Object[]{destination, result, ar.succeeded(), ar.cause()});
     }
 }

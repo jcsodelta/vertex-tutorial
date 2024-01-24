@@ -18,30 +18,30 @@ public class DataClusterSerializable extends Data implements ClusterSerializable
 
     @Override
     public int readFromBuffer(int i, Buffer buffer) {
-        int name_start = 0;
-        int name_end = 0;
-        int buffer_end = 0;
+        int nameStart = 0;
+        int nameEnd = 0;
+        int bufferEnd = 0;
 
-        StringBuilder name_buffer = new StringBuilder();
-        while (i < buffer.length() && buffer_end == 0) {
+        StringBuilder nameBuffer = new StringBuilder();
+        while (i < buffer.length() && bufferEnd == 0) {
             char c = (char)buffer.getByte(i);
             if (c == '>') {
-                buffer_end = i;
-            } else if (name_start == 0 && c == '\'') {
-                name_start = i;
-            } else if (name_start != 0 && name_end == 0) {
+                bufferEnd = i;
+            } else if (nameStart == 0 && c == '\'') {
+                nameStart = i;
+            } else if (nameStart != 0 && nameEnd == 0) {
                 if (c == '\'') {
-                    name_end = i;
+                    nameEnd = i;
                 } else {
-                    name_buffer.append(c);
+                    nameBuffer.append(c);
                 }
             }
 
             ++i;
         }
 
-        this.name = name_buffer.toString();
+        this.name = nameBuffer.toString();
 
-        return buffer_end;
+        return bufferEnd;
     }
 }

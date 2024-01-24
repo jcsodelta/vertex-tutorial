@@ -3,95 +3,95 @@ package com.joaocsoliveira.verticles;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.joaocsoliveira.Config.*;
 
 public class JudgeVerticle extends AbstractVerticle {
-    private final Map<UUID, Integer> players_map = new HashMap<>();
-    private String game_id;
-    private int current_round = 0;
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
+    private final Map<UUID, Integer> playersMap = new HashMap<>();
+    private String gameId;
+    private int currentRound = 0;
 
+    @Override
     public void start() {
-        game_id = config().getString("game_id");
+        gameId = config().getString(GAME_ID_ATTRIBUTE_NAME);
 
-        System.out.printf("JudgeVerticle (%s) is being deployed\n", game_id);
+        logger.log(Level.INFO, "JudgeVerticle ({0}) is being deployed", gameId);
 
-        players_map.put(UUID.fromString(config().getString("player1_id")), 0);
-        players_map.put(UUID.fromString(config().getString("player2_id")), 0);
+        playersMap.put(UUID.fromString(config().getString(PLAYER_1_ID_ATTRIBUTE_NAME)), 0);
+        playersMap.put(UUID.fromString(config().getString(PLAYER_2_ID_ATTRIBUTE_NAME)), 0);
 
         EventBus eb = vertx.eventBus();
-        eb.consumer(String.format("game.%s", game_id), message -> {
+        eb.consumer(String.format("game.%s", gameId), message -> {
             String text = (String) message.body();
-            switch (text) {
-                case "start": {
-                    eb.send("output.printer", "game starting");
-                    run_turn();
-                    break;
-                }
-                default: {
-                    eb.send("output.printer", String.format("game received unknown instruction: %s", text));
-                }
+            if (text.equals("start")) {
+                eb.send(OUTPUT_PRINTER_ADDRESS, "game starting");
+                runTurn();
+            } else {
+                eb.send(OUTPUT_PRINTER_ADDRESS, String.format("game received unknown instruction: %s", text));
             }
         });
     }
 
-    private void run_turn() {
+    private void runTurn() {
         EventBus eb = vertx.eventBus();
 
-        ++current_round;
-        eb.send("output.printer", String.format("\tcurrent round: %s", current_round));
+        ++currentRound;
+        eb.send(OUTPUT_PRINTER_ADDRESS, String.format("\tcurrent round: %s", currentRound));
 
-        var responses = players_map.keySet().stream().map(player_id ->
-            eb.request(String.format("game.%s.turn.%s", game_id, player_id), "")
-        ).collect(Collectors.toList());
+        var responses = playersMap.keySet().stream().map(playerId ->
+            eb.request(String.format("game.%s.turn.%s", gameId, playerId), "")
+        ).toList();
 
         Future.all(responses).onComplete(ar -> {
             if (ar.failed()) {
-                eb.send("output.printer", String.format("game error: %s", ar.cause()));
-                eb.send(String.format("game.%s.stop", game_id), "");
+                eb.send(OUTPUT_PRINTER_ADDRESS, String.format("game error: %s", ar.cause()));
+                eb.send(String.format("game.%s.stop", gameId), "");
                 return;
             }
 
-            var winner_response = responses.stream().reduce(null, (previous_response, response) -> {
-                if (previous_response == null) {
+            var winnerResponse = responses.stream().reduce(null, (previousResponse, response) -> {
+                if (previousResponse == null) {
                     return response;
                 }
 
-                Integer previous_value = (Integer) previous_response.result().body();
-                Integer current_value = (Integer) response.result().body();
+                Integer previousValue = (Integer) previousResponse.result().body();
+                Integer currentValue = (Integer) response.result().body();
 
-                if (previous_value > current_value) {
-                    return previous_response;
-                } else if (previous_value < current_value) {
+                if (previousValue > currentValue) {
+                    return previousResponse;
+                } else if (previousValue < currentValue) {
                     return response;
                 } else {
                     return null;
                 }
             });
 
-            if (winner_response != null) {
-                UUID player_id = UUID.fromString(winner_response.result().headers().get("player_id"));
-                int new_ponctuation = players_map.get(player_id) + 1;
+            if (winnerResponse != null) {
+                UUID playerId = UUID.fromString(winnerResponse.result().headers().get("player_id"));
+                int newPunctuation = playersMap.get(playerId) + 1;
 
-                if (new_ponctuation >= 5) {
-                    eb.send("output.printer", String.format("game winner: %s", player_id));
-                    eb.send(String.format("game.%s.stop", game_id), "");
+                if (newPunctuation >= 5) {
+                    eb.send(OUTPUT_PRINTER_ADDRESS, String.format("game winner: %s", playerId));
+                    eb.send(String.format("game.%s.stop", gameId), "");
                     return;
                 }
 
-                players_map.put(player_id, new_ponctuation);
+                playersMap.put(playerId, newPunctuation);
             }
 
-            run_turn();
+            runTurn();
         });
     }
 
+    @Override
     public void stop() {
-        System.out.printf("JudgeVerticle (%s) is being undeployed\n", game_id);
+        logger.log(Level.INFO, "JudgeVerticle ({0}) is being undeployed\n", gameId);
     }
 }

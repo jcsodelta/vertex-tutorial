@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/01-get_started/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/01-get_started/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.1-vertx_instance/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.1-vertx_instance/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.2-futures/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.2-futures/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.3-verticles/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.3-verticles/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.4-event_bus/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.4-event_bus/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.5-reply_failures/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.5-reply_failures/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.6-message_codecs/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.6-message_codecs/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.7-clustered_event_bus/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/02-vertx_core/02.7-clustered_event_bus/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

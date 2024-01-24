@@ -3,23 +3,30 @@ package com.joaocsoliveira.verticles;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 
-public class BlockingVerticle extends AbstractVerticle {
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+public class BlockingVerticle extends AbstractVerticle {
+    private final Logger logger = Logger.getLogger(getClass().getName());
+
+    @Override
     public void start() {
-        System.out.println("BlockingVerticle is being deployed");
+        logger.info("BlockingVerticle is being deployed");
 
         EventBus eb = vertx.eventBus();
         eb.consumer("action.do_something", message -> {
             try {
                 Thread.sleep(1000);
-                System.out.printf("done %s\n", message.body());
+                logger.log(Level.INFO, "done {0}", message.body());
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                logger.warning("Thread.sleep failed...");
+                Thread.currentThread().interrupt();
             }
         });
     }
 
+    @Override
     public void stop() {
-        System.out.println("BlockingVerticle is being undeployed");
+        logger.info("BlockingVerticle is being undeployed");
     }
 }

@@ -4,19 +4,26 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 
-public class JsonVerticle extends AbstractVerticle {
+import java.util.logging.Logger;
 
+import static com.joaocsoliveira.Config.PRINTER_JSON_OBJECT_ADDRESS;
+
+public class JsonVerticle extends AbstractVerticle {
+    private final Logger logger = Logger.getLogger(getClass().getName());
+
+    @Override
     public void start() {
-        System.out.println("JsonVerticle is being deployed");
+        logger.info("JsonVerticle is being deployed");
 
         EventBus eb = vertx.eventBus();
-        eb.consumer("printer.json_object", message -> {
-            JsonObject json_object = (JsonObject) message.body();
-            message.reply(String.format("JsonVerticle: name '%s'", json_object.getString("name")));
+        eb.consumer(PRINTER_JSON_OBJECT_ADDRESS, message -> {
+            JsonObject jsonObject = (JsonObject) message.body();
+            message.reply(String.format("JsonVerticle: name '%s'", jsonObject.getString("name")));
         });
     }
 
+    @Override
     public void stop() {
-        System.out.println("JsonVerticle is being undeployed");
+        logger.info("JsonVerticle is being undeployed");
     }
 }

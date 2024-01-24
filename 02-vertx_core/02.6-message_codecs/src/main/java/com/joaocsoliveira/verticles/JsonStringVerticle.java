@@ -7,27 +7,33 @@ import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 
 import java.util.Map;
+import java.util.logging.Logger;
+
+import static com.joaocsoliveira.Config.PRINTER_JSON_STRING_ADDRESS;
 
 public class JsonStringVerticle extends AbstractVerticle {
+    private final Logger logger = Logger.getLogger(getClass().getName());
     private static final Gson gson = new Gson();
 
+    @Override
     public void start() {
-        System.out.println("JsonStringVerticle is being deployed");
+        logger.info("JsonStringVerticle is being deployed");
 
         EventBus eb = vertx.eventBus();
-        eb.consumer("printer.json_string", message -> {
+        eb.consumer(PRINTER_JSON_STRING_ADDRESS, message -> {
             try {
-                String json_string = (String) message.body();
+                String jsonString = (String) message.body();
 
-                Map<String, String> json_map = gson.fromJson(json_string, new TypeToken<>() {});
-                message.reply(String.format("JsonStringVerticle: name '%s'", json_map.get("name")));
+                Map<String, String> jsonMap = gson.fromJson(jsonString, new TypeToken<>() {});
+                message.reply(String.format("JsonStringVerticle: name '%s'", jsonMap.get("name")));
             } catch (JsonSyntaxException | ClassCastException ex) {
                 message.fail(0, ex.getMessage());
             }
         });
     }
 
+    @Override
     public void stop() {
-        System.out.println("JsonStringVerticle is being undeployed");
+        logger.info("JsonStringVerticle is being undeployed");
     }
 }

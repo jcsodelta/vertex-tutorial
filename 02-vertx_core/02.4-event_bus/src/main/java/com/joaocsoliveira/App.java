@@ -9,33 +9,42 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class App {
+    private static final Logger logger = Logger.getLogger(App.class.getName());
+
     public static void main(String[] args) {
-        System.out.println("Starting App::main!");
+        logger.info("Starting App::main!");
 
         Vertx vertx = Vertx.vertx();
 
         Future.all(Arrays.asList(
-            vertx.deployVerticle("com.joaocsoliveira.verticles.InstantiatorVerticle"),
-            vertx.deployVerticle("com.joaocsoliveira.verticles.PrinterVerticle", new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER).setConfig(new JsonObject().put("name", "first"))),
-            vertx.deployVerticle("com.joaocsoliveira.verticles.PrinterVerticle", new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER).setConfig(new JsonObject().put("name", "second")))
+                vertx.deployVerticle("com.joaocsoliveira.verticles.InstantiatorVerticle"),
+                vertx.deployVerticle("com.joaocsoliveira.verticles.PrinterVerticle",
+                        new DeploymentOptions()
+                                .setThreadingModel(ThreadingModel.WORKER)
+                                .setConfig(new JsonObject().put("name", "first"))),
+                vertx.deployVerticle("com.joaocsoliveira.verticles.PrinterVerticle",
+                        new DeploymentOptions()
+                                .setThreadingModel(ThreadingModel.WORKER)
+                                .setConfig(new JsonObject().put("name", "second")))
         )).onComplete(ar -> {
             if (ar.failed()) {
-                System.out.println("failed deploying verticles");
+                logger.info("failed deploying verticles");
             } else {
-                String game_id = UUID.randomUUID().toString();
+                String gameId = UUID.randomUUID().toString();
                 EventBus eb = vertx.eventBus();
-                vertx.setTimer(1000, id -> {
-                    eb.send("game.create", game_id);
-                });
+                vertx.setTimer(1000, id ->
+                        eb.send("game.create", gameId)
+                );
 
-                eb.consumer(String.format("game.%s.stop", game_id), message -> {
-                    vertx.close();
-                });
+                eb.consumer(String.format("game.%s.stop", gameId), message ->
+                        vertx.close()
+                );
             }
         });
 
-        System.out.println("Exiting App::main!");
+        logger.info("Exiting App::main!");
     }
 }
