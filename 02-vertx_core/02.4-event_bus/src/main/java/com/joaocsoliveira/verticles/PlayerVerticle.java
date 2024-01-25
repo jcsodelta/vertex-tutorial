@@ -4,7 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,7 +12,7 @@ import static com.joaocsoliveira.Config.*;
 
 public class PlayerVerticle extends AbstractVerticle {
     private final Logger logger = Logger.getLogger(this.getClass().getName());
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
 
     @Override
     public void start() {

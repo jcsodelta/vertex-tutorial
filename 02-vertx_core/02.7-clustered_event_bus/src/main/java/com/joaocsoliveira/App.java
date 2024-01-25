@@ -25,7 +25,7 @@ public class App {
         Vertx.clusteredVertx(options)
             .onComplete(arCreation -> {
                 if (arCreation.failed()) {
-                    logger.log(Level.INFO, "Failed instantiating clustered vertx: {0}", arCreation.cause());
+                    logger.log(Level.INFO, "Failed instantiating clustered vertx: {0}", arCreation.cause().toString());
                     System.exit(1);
                 }
 
@@ -49,7 +49,7 @@ public class App {
                 }
                 String name = consumer ? CONSUMER_NAME : PRODUCER_NAME;
                 String params = String.join(" ", args);
-                logger.log(Level.INFO, "initializing {0}  args = '{1}'", new Object[]{name, params});
+                logger.log(Level.INFO, "initializing {0} args = \"{1}\"", new String[]{name, params});
 
                 if (consumer) {
                     logger.info("starting worker");
